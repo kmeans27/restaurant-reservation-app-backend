@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Manage Reservations for {{ restaurant.name }}</title>
+    <style>
+        /* Basic styling for better readability */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #aaa;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #ddd;
+        }
+        .action-buttons button {
+            margin-right: 5px;
+        }
+        .flash-message {
+            color: green;
+        }
+        .error-message {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <h1>Manage Reservations for "{{ restaurant.name }}"</h1>
+    
+    <!-- Display Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="{{ category }}-message">
+              {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    
+    <!-- Reservations Table -->
+    <table>
+        <thead>
+            <tr>
+                <th>Reservation ID</th>
+                <th>Reservation Datetime</th>
+                <th>Person Count</th>
+                <th>Name</th>
+                <th>Timestamp</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for reservation in reservations %}
+                <tr>
+                    <td>{{ reservation.id }}</td>
+                    <td>{{ reservation.reservation_datetime.strftime('%d/%m/%Y %H:%M') }}</td>
+                    <td>{{ reservation.person_count }}</td>
+                    <td>{{ reservation.name }}</td>
+                    <td>{{ reservation.timestamp.strftime('%d/%m/%Y %H:%M') }}</td>
+                    <td>{{ reservation.status.capitalize() }}</td>
+                    <td class="action-buttons">
+                        {% if reservation.status == 'pending' %}
+                            <form method="POST" action="{{ url_for('main.update_reservation_status_html', reservation_id=reservation.id) }}" style="display:inline;">
+                                <input type="hidden" name="status" value="accepted">
+                                <button type="submit">Accept</button>
+                            </form>
+                            <form method="POST" action="{{ url_for('main.update_reservation_status_html', reservation_id=reservation.id) }}" style="display:inline;">
+                                <input type="hidden" name="status" value="declined">
+                                <button type="submit">Decline</button>
+                            </form>
+                        {% else %}
+                            <!-- No actions available -->
+                            N/A
+                        {% endif %}
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="7">No upcoming reservations.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <p><a href="{{ url_for('main.manage_restaurants') }}">Back to Manage Restaurants</a></p>
+</body>
+</html>

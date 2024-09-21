@@ -1,4 +1,3 @@
-<!-- app/templates/restaurants.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,10 +9,19 @@
     <ul>
         {% for restaurant in restaurants %}
             <li>
-                <h2><a href="{{ url_for('main.restaurant_detail', restaurant_id=restaurant.id) }}">{{ restaurant.name }}</a></h2>
+                <h2>
+                    <a href="{{ url_for('main.get_restaurant_detail', restaurant_id=restaurant.id) }}">
+                        {{ restaurant.name }}
+                    </a>
+                </h2>
                 <p>{{ restaurant.description }}</p>
                 <p>Address: {{ restaurant.address }}</p>
                 <p>Phone: {{ restaurant.phone_number }}</p>
+                <p><strong>Categories:</strong>
+                    {% for category in restaurant.categories %}
+                        {{ category.name }}{% if not loop.last %}, {% endif %}
+                    {% endfor %}
+                </p>
             </li>
         {% endfor %}
     </ul>

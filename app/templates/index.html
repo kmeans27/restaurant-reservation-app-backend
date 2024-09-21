@@ -1,10 +1,49 @@
-<!-- app/templates/index.html -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Restaurant Reservation App</title>
+    <style>
+        /* Basic styling for better readability */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        .api-section {
+            margin-top: 40px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            border: 1px solid #aaa;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #ddd;
+        }
+        .api-description {
+            font-style: italic;
+            color: #555;
+        }
+        code {
+            background-color: #f4f4f4;
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
+        pre {
+            background-color: #f4f4f4;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
 </head>
 <body>
     <h1>Welcome to the Restaurant Reservation App</h1>
@@ -13,5 +52,91 @@
         <li><a href="{{ url_for('main.create_restaurant') }}">Create New Restaurant</a></li>
         <li><a href="{{ url_for('main.manage_restaurants') }}">Manage Restaurants</a></li>
     </ul>
+    
+    <!-- API Documentation Section -->
+    <div class="api-section">
+        <h2>API Documentation</h2>
+        <p class="api-description">Below is a list of available API endpoints for interacting with the Restaurant Reservation App.</p>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>HTTP Method</th>
+                    <th>Endpoint</th>
+                    <th>Description</th>
+                    <th>Example Usage</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Restaurants Endpoints -->
+                <tr>
+                    <td>GET</td>
+                    <td><code>/api/restaurants</code></td>
+                    <td>Retrieve a list of all restaurants with their associated categories.</td>
+                    <td>
+                        <pre><code>curl http://localhost:5000/api/restaurants</code></pre>
+                    </td>
+                </tr>
+                <tr>
+                    <td>GET</td>
+                    <td><code>/api/restaurants/&lt;int:restaurant_id&gt;</code></td>
+                    <td>Retrieve detailed information about a specific restaurant, including categories and reservations.</td>
+                    <td>
+                        <pre><code>curl http://localhost:5000/api/restaurants/1</code></pre>
+                    </td>
+                </tr>
+                
+                <!-- Categories Endpoints -->
+                <tr>
+                    <td>GET</td>
+                    <td><code>/api/categories</code></td>
+                    <td>Retrieve a list of all restaurant categories.</td>
+                    <td>
+                        <pre><code>curl http://localhost:5000/api/categories</code></pre>
+                    </td>
+                </tr>
+                <tr>
+                    <td>GET</td>
+                    <td><code>/api/categories/&lt;int:category_id&gt;/restaurants</code></td>
+                    <td>Retrieve a list of restaurants filtered by a specific category.</td>
+                    <td>
+                        <pre><code>curl http://localhost:5000/api/categories/1/restaurants</code></pre>
+                    </td>
+                </tr>
+                
+                <!-- Reservations Endpoints -->
+                <tr>
+                    <td>POST</td>
+                    <td><code>/api/reservations</code></td>
+                    <td>Create a new reservation.</td>
+                    <td>
+                        <pre><code>curl -X POST http://localhost:5000/api/reservations \
+    -H "Content-Type: application/json" \
+    -d '{
+        "reservationDatetime": "22/09/2024 19:00",
+        "name": "John Doe",
+        "personCount": 4,
+        "restaurantId": 1
+    }'</code></pre>
+                    </td>
+                </tr>
+                <tr>
+                    <td>PATCH</td>
+                    <td><code>/api/reservations/&lt;int:reservation_id&gt;</code></td>
+                    <td>Update the status of a reservation (accept or decline).</td>
+                    <td>
+                        <pre><code>curl -X PATCH http://localhost:5000/api/reservations/1 \
+    -H "Content-Type: application/json" \
+    -d '{
+        "status": "accepted"
+    }'</code></pre>
+                    </td>
+                </tr>
+                
+                <!-- Additional Endpoints (Optional) -->
+                <!-- Add more endpoints here as you develop them -->
+            </tbody>
+        </table>
+    </div>
 </body>
 </html>

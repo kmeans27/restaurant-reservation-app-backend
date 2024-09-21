@@ -1,27 +1,141 @@
-<!-- app/templates/create_restaurant.html -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Create Restaurant</title>
+    <title>Create New Restaurant</title>
+    <style>
+        /* Basic styling */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        form {
+            margin-top: 20px;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+        }
+        .categories {
+            margin-top: 10px;
+        }
+        .categories div {
+            margin-bottom: 5px;
+        }
+        .flash-message {
+            color: green;
+        }
+        .error-message {
+            color: red;
+        }
+        .errors {
+            color: red;
+            list-style-type: none;
+        }
+        .submit-button {
+            margin-top: 15px;
+        }
+    </style>
+    <script>
+        // Optional: Implement Select/Deselect All functionality
+        function toggleSelectAll(source) {
+            const checkboxes = document.querySelectorAll('input[name="categories"]');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = source.checked;
+            });
+        }
+    </script>
 </head>
 <body>
-    <h1>Create a New Restaurant</h1>
+    <h1>Create New Restaurant</h1>
+    
+    <!-- Display Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="{{ category }}-message">
+              {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    
     <form method="POST" action="{{ url_for('main.create_restaurant') }}">
-        <label for="name">Name:</label><br>
-        <input type="text" id="name" name="name" required><br><br>
+        {{ form.hidden_tag() }}
         
-        <label for="address">Address:</label><br>
-        <input type="text" id="address" name="address" required><br><br>
+        <label for="name">Name:</label>
+        {{ form.name(size=32) }}
+        {% if form.name.errors %}
+            <ul class="errors">
+                {% for error in form.name.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
         
-        <label for="phone_number">Phone Number:</label><br>
-        <input type="text" id="phone_number" name="phone_number" required><br><br>
+        <label for="address">Address:</label>
+        {{ form.address(size=64) }}
+        {% if form.address.errors %}
+            <ul class="errors">
+                {% for error in form.address.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
         
-        <label for="description">Description:</label><br>
-        <textarea id="description" name="description" rows="4" cols="50"></textarea><br><br>
+        <label for="phone_number">Phone Number:</label>
+        {{ form.phone_number(size=20) }}
+        {% if form.phone_number.errors %}
+            <ul class="errors">
+                {% for error in form.phone_number.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
         
-        <input type="submit" value="Create Restaurant">
+        <label for="description">Description:</label>
+        {{ form.description(rows=4) }}
+        {% if form.description.errors %}
+            <ul class="errors">
+                {% for error in form.description.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        
+        <div class="categories">
+            <label>Categories:</label>
+            {% for value, label in form.categories.choices %}
+                <div>
+                    <label>
+                        <input type="checkbox" name="{{ form.categories.name }}" value="{{ value }}"
+                            {% if value in form.categories.data %}checked{% endif %}>
+                        {{ label }}
+                    </label>
+                </div>
+            {% endfor %}
+            {% if form.categories.errors %}
+                <ul class="errors">
+                    {% for error in form.categories.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+        
+        <div class="submit-button">
+            {{ form.submit() }}
+        </div>
     </form>
+    
+    <p><a href="{{ url_for('main.list_restaurants') }}">Back to Restaurants List</a></p>
 </body>
 </html>

@@ -1,23 +1,73 @@
-<!-- app/templates/reservations.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Reservations</title>
+    <title>Restaurants</title>
+    <style>
+        /* Basic styling for better readability */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #aaa;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #ddd;
+        }
+    </style>
 </head>
 <body>
-    <h1>Reservations</h1>
-    <ul>
-        {% for reservation in reservations %}
-            <li>
-                <p>Reservation ID: {{ reservation.id }}</p>
-                <p>User: {{ reservation.user.name }}</p>
-                <p>Restaurant: {{ reservation.restaurant.name }}</p>
-                <p>Date & Time: {{ reservation.reservation_datetime }}</p>
-                <p>Guests: {{ reservation.number_of_guests }}</p>
-                <p>Status: {{ reservation.status }}</p>
-            </li>
-        {% endfor %}
-    </ul>
+    <h1>Restaurants</h1>
+    <p><a href="{{ url_for('main.create_restaurant') }}">Create New Restaurant</a></p>
+    <table>
+        <thead>
+            <tr>
+                <th>Restaurant ID</th>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Address</th>
+                <th>Phone Number</th>
+                <th>Categories</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for restaurant in restaurants %}
+                <tr>
+                    <td>{{ restaurant.id }}</td>
+                    <td>{{ restaurant.name }}</td>
+                    <td>{{ restaurant.description }}</td>
+                    <td>{{ restaurant.address }}</td>
+                    <td>{{ restaurant.phone_number }}</td>
+                    <td>
+                        {% for category in restaurant.categories %}
+                            {{ category.name }}{% if not loop.last %}, {% endif %}
+                        {% endfor %}
+                    </td>
+                    <td>
+                        <a href="{{ url_for('main.get_restaurant_detail', restaurant_id=restaurant.id) }}">View</a> |
+                        <a href="{{ url_for('main.edit_restaurant', restaurant_id=restaurant.id) }}">Edit</a> |
+                        <a href="{{ url_for('main.manage_reservations', restaurant_id=restaurant.id) }}">Manage Reservations</a>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="7">No restaurants found.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <p><a href="{{ url_for('main.index') }}">Back to Home</a></p>
 </body>
 </html>

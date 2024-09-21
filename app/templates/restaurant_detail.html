@@ -1,30 +1,42 @@
-<!-- app/templates/restaurant_detail.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>{{ restaurant.name }}</title>
+    <title>{{ restaurant.name }} Details</title>
+    <style>
+        /* Basic styling */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        .details {
+            margin-top: 20px;
+        }
+        .details p {
+            line-height: 1.6;
+        }
+        .categories {
+            margin-top: 10px;
+        }
+    </style>
 </head>
 <body>
     <h1>{{ restaurant.name }}</h1>
-    <p>{{ restaurant.description }}</p>
-    <p>Address: {{ restaurant.address }}</p>
-    <p>Phone: {{ restaurant.phone_number }}</p>
-    <p>
-        <a href="{{ url_for('main.edit_restaurant', restaurant_id=restaurant.id) }}">Edit Restaurant</a>
-    </p>
-    <h2>Reservations</h2>
-    <ul>
-        {% for reservation in restaurant.reservations %}
-            <li>
-                <p>User: {{ reservation.user.name }}</p>
-                <p>Date & Time: {{ reservation.reservation_datetime }}</p>
-                <p>Guests: {{ reservation.number_of_guests }}</p>
-                <p>Status: {{ reservation.status }}</p>
-            </li>
-        {% else %}
-            <p>No reservations yet.</p>
-        {% endfor %}
-    </ul>
+    <div class="details">
+        <p><strong>Description:</strong> {{ restaurant.description }}</p>
+        <p><strong>Address:</strong> {{ restaurant.address }}</p>
+        <p><strong>Phone Number:</strong> {{ restaurant.phone_number }}</p>
+        <div class="categories">
+            <strong>Categories:</strong>
+            {% for category in restaurant.categories %}
+                {{ category.name }}{% if not loop.last %}, {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+    <p><a href="{{ url_for('main.edit_restaurant', restaurant_id=restaurant.id) }}">Edit Restaurant</a> | <a href="{{ url_for('main.manage_reservations', restaurant_id=restaurant.id) }}">Manage Reservations</a></p>
+    <p><a href="{{ url_for('main.list_restaurants') }}">Back to Restaurants List</a></p>
 </body>
 </html>

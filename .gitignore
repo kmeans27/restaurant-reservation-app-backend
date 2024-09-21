@@ -6,14 +6,6 @@ __pycache__/
 # C extensions
 *.so
 
-# Virtual environment directories
-env/
-venv/
-.venv/
-ENV/
-env.bak/
-venv.bak/
-
 # Distribution / packaging
 .Python
 build/
@@ -31,26 +23,14 @@ var/
 .installed.cfg
 *.egg
 
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
+# Virtual environment
+venv/
+ENV/
+env/
+env.bak/
+venv.bak/
 
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.coverage
-.cache
-.pytest_cache/
-
-# Environments
-.env
-.venv
-.flaskenv
-
-# Django stuff:
-*.log
-
-# Flask stuff:
+# Flask specific
 instance/
 .webassets-cache
 
@@ -60,18 +40,15 @@ instance/
 # VS Code
 .vscode/
 
-# Migrations
-migrations/
-
-# Database
-*.db
-*.sqlite3
-
-# MacOS files
+# MacOS
 .DS_Store
 
-# Secret configuration files
-config.py
+# Logs
+*.log
 
-# Seed files
-seed.py
+# Remove or comment out the following lines if present to include app.db
+# *.db
+# app.db
+
+# Ensure HTML template files are not ignored
+# templates/*.html
