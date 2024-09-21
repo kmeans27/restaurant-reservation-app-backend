@@ -1,0 +1,21 @@
+<!-- app/templates/restaurants.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Restaurants</title>
+</head>
+<body>
+    <h1>Restaurants</h1>
+    <ul>
+        {% for restaurant in restaurants %}
+            <li>
+                <h2><a href="{{ url_for('main.restaurant_detail', restaurant_id=restaurant.id) }}">{{ restaurant.name }}</a></h2>
+                <p>{{ restaurant.description }}</p>
+                <p>Address: {{ restaurant.address }}</p>
+                <p>Phone: {{ restaurant.phone_number }}</p>
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

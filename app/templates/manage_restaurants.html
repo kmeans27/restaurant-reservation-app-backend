@@ -1,0 +1,26 @@
+<!-- app/templates/manage_restaurants.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Manage Restaurants</title>
+</head>
+<body>
+    <h1>Manage Restaurants</h1>
+    <ul>
+        {% for restaurant in restaurants %}
+            <li>
+                <h2>{{ restaurant.name }}</h2>
+                <p>{{ restaurant.description }}</p>
+                <p>Address: {{ restaurant.address }}</p>
+                <p>Phone: {{ restaurant.phone_number }}</p>
+                <p>
+                    <a href="{{ url_for('main.edit_restaurant', restaurant_id=restaurant.id) }}">Edit</a>
+                    <!-- You can add more management options here -->
+                </p>
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

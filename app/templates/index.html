@@ -1,0 +1,17 @@
+<!-- app/templates/index.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Restaurant Reservation App</title>
+</head>
+<body>
+    <h1>Welcome to the Restaurant Reservation App</h1>
+    <ul>
+        <li><a href="{{ url_for('main.list_restaurants') }}">View Restaurants</a></li>
+        <li><a href="{{ url_for('main.create_restaurant') }}">Create New Restaurant</a></li>
+        <li><a href="{{ url_for('main.manage_restaurants') }}">Manage Restaurants</a></li>
+    </ul>
+</body>
+</html>

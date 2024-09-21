@@ -1,0 +1,23 @@
+<!-- app/templates/reservations.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Reservations</title>
+</head>
+<body>
+    <h1>Reservations</h1>
+    <ul>
+        {% for reservation in reservations %}
+            <li>
+                <p>Reservation ID: {{ reservation.id }}</p>
+                <p>User: {{ reservation.user.name }}</p>
+                <p>Restaurant: {{ reservation.restaurant.name }}</p>
+                <p>Date & Time: {{ reservation.reservation_datetime }}</p>
+                <p>Guests: {{ reservation.number_of_guests }}</p>
+                <p>Status: {{ reservation.status }}</p>
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
