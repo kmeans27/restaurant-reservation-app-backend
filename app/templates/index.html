@@ -113,10 +113,12 @@
                         <pre><code>curl -X POST http://localhost:5000/api/reservations \
     -H "Content-Type: application/json" \
     -d '{
-        "reservationDatetime": "22/09/2024 19:00",
-        "name": "John Doe",
-        "personCount": 4,
-        "restaurantId": 1
+        "restaurant_id": 1,
+        "name": "Max Mustermann",
+        "date": "2024-05-20",
+        "time": "19:30",
+        "number_of_people": 4,
+        "timestamp": "2024-04-27T14:35:22Z"
     }'</code></pre>
                     </td>
                 </tr>

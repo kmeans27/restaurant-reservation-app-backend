@@ -211,66 +211,73 @@ def get_restaurants_by_category(category_id):
     return jsonify(data)
 
 
-# Endpoint to create a new reservation
 @bp.route('/api/reservations', methods=['POST'])
 def create_reservation():
     data = request.get_json()
     if not data:
-        return jsonify({'error': 'No input data provided'}), 400
-    
-    # Extract and validate data
-    reservation_datetime_str = data.get('reservationDatetime')
+        return jsonify({'error': 'Invalid JSON data.'}), 400
+
+    # Extract data using new variable names
+    restaurant_id = data.get('restaurant_id')
     name = data.get('name')
-    person_count = data.get('personCount')
-    restaurant_id = data.get('restaurantId')
-    
-    if not all([reservation_datetime_str, name, person_count, restaurant_id]):
-        return jsonify({'error': 'Missing required fields'}), 400
-    
-    try:
-        # Parse reservation_datetime
-        reservation_datetime = datetime.strptime(reservation_datetime_str, '%d/%m/%Y %H:%M')
-    except ValueError:
-        return jsonify({'error': 'Invalid date format. Use DD/MM/YYYY HH:MM'}), 400
-    
-    # Optional: Validate restaurant existence
+    date_str = data.get('date')
+    time_str = data.get('time')
+    number_of_people = data.get('number_of_people')
+    timestamp_str = data.get('timestamp')
+
+    # Validate required fields
+    if not all([restaurant_id, name, date_str, time_str, number_of_people, timestamp_str]):
+        return jsonify({'error': 'Missing required fields.'}), 400
+
+    # Validate restaurant existence
     restaurant = Restaurant.query.get(restaurant_id)
     if not restaurant:
-        return jsonify({'error': 'Restaurant not found'}), 404
-    
-    # Create Reservation object
-    reservation = Reservation(
-        reservation_datetime=reservation_datetime,
-        name=name,
-        person_count=person_count,
+        return jsonify({'error': 'Restaurant not found.'}), 404
+
+    try:
+        # Combine date and time into a single datetime object
+        reservation_datetime = datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %H:%M")
+    except ValueError:
+        return jsonify({'error': 'Invalid date or time format.'}), 400
+
+    try:
+        # Parse timestamp
+        timestamp = datetime.fromisoformat(timestamp_str.replace('Z', '+00:00'))
+    except ValueError:
+        return jsonify({'error': 'Invalid timestamp format.'}), 400
+
+    # Create a new Reservation object
+    new_reservation = Reservation(
         restaurant_id=restaurant_id,
-        status='pending'  # Default status
+        name=name,
+        reservation_datetime=reservation_datetime,
+        person_count=number_of_people,
+        timestamp=timestamp,
+        status='pending'  # Assuming default status
     )
-    
-    # Add to database
-    db.session.add(reservation)
+
+    db.session.add(new_reservation)
     db.session.commit()
-    
-    return jsonify({'message': 'Reservation created successfully', 'reservation_id': reservation.id}), 201
+
+    return jsonify({'message': 'Reservation created successfully.', 'reservation_id': new_reservation.id}), 201
 
 # Endpoint to update reservation status (accept or decline)
 @bp.route('/api/reservations/<int:reservation_id>', methods=['PATCH'])
-def update_reservation_status(reservation_id):
+def update_reservation(reservation_id):
     data = request.get_json()
     if not data:
-        return jsonify({'error': 'No input data provided'}), 400
-    
-    status = data.get('status')
+        return jsonify({'error': 'Invalid JSON data.'}), 400
+
+    status = data.get('status')  # Assuming 'status' remains unchanged
+
     if status not in ['accepted', 'declined']:
-        return jsonify({'error': 'Invalid status. Must be "accepted" or "declined"'}), 400
-    
-    reservation = Reservation.query.get_or_404(reservation_id)
-    
-    # Only allow updating if status is pending
-    if reservation.status != 'pending':
-        return jsonify({'error': 'Only pending reservations can be updated'}), 400
-    
+        return jsonify({'error': 'Invalid status value.'}), 400
+
+    reservation = Reservation.query.get(reservation_id)
+    if not reservation:
+        return jsonify({'error': 'Reservation not found.'}), 404
+
     reservation.status = status
     db.session.commit()
-    
-    return jsonify({'message': f'Reservation {status} successfully'}), 200
+
+    return jsonify({'message': f'Reservation {status} successfully.'}), 200
