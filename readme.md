@@ -60,7 +60,7 @@ The **Restaurant Reservation App** is a web-based platform designed to streamlin
   - [GitHub](https://github.com/) - Hosting for version control and collaboration.
 
 ## API Documentation
-
+# Restaurant Endpoints
 - **GET /api/restaurants**
     - Retrieve a list of all restaurants with their associated categories
     - curl http://localhost:5000/api/restaurants
@@ -69,6 +69,8 @@ The **Restaurant Reservation App** is a web-based platform designed to streamlin
     - Retrieve detailed information about a specific restaurant, including categories and reservations.
     - curl http://localhost:5000/api/restaurants/1
 
+# Category Endpoints
+
 - **GET /api/categories**
     - Retrieve a list of all restaurant categories.
     - curl http://localhost:5000/api/categories
@@ -76,6 +78,8 @@ The **Restaurant Reservation App** is a web-based platform designed to streamlin
 - **GET /api/categories/<int:category_id>/restaurants**
     - Retrieve a list of restaurants filtered by a specific category.
     - curl http://localhost:5000/api/categories/1/restaurants
+
+# Reservation Endpoints
 
 - **POST /api/reservations**
     - Create a new reservation
@@ -92,8 +96,7 @@ The **Restaurant Reservation App** is a web-based platform designed to streamlin
 
 - **POST /api/reservations/<int:reservation_id>**
     - Update the status of a reservation (accept or decline).
-    - 	
-curl -X PATCH http://localhost:5000/api/reservations/1 \
+    - curl -X PATCH http://localhost:5000/api/reservations/1 \
     -H "Content-Type: application/json" \
     -d '{
         "status": "accepted"
