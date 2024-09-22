@@ -106,7 +106,9 @@ The **Restaurant Reservation App** is a web-based platform designed to streamlin
 
 ## Next Steps
 
-1. Create a new API Endpoint to send reservation data to the Frontend APP
-2. Define an unique identifier for the frontend user so we can differentiate between their information/reservations
+1. Create a new API Endpoint to send reservation data to the Frontend APP + add to index.html api documentation + readme
+2. Define a unique identifier for the frontend user so we can differentiate between their information/reservations
 3. Create a login functionality and a way to sign up
 4. Create a Dashboard where the Restaurant sees their most important information clearly
+5. Create a navigation header to quickly navigate between sites
+6. Color code reservations according to their status pending/accepted/declined and their datetime (today, tomorrow, past,..)
