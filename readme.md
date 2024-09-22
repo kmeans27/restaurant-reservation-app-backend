@@ -11,6 +11,7 @@
   - [Restaurants Endpoints](#restaurants-endpoints)
   - [Categories Endpoints](#categories-endpoints)
   - [Reservations Endpoints](#reservations-endpoints)
+- [Next Steps](#next-steps)
 - [Project Structure](#project-structure)
 - [Contributing](#contributing)
 - [License](#license)
@@ -101,3 +102,11 @@ The **Restaurant Reservation App** is a web-based platform designed to streamlin
     -d '{
         "status": "accepted"
     }'
+
+
+## Next Steps
+
+1. Create a new API Endpoint to send reservation data to the Frontend APP
+2. Define an unique identifier for the frontend user so we can differentiate between their information/reservations
+3. Create a login functionality and a way to sign up
+4. Create a Dashboard where the Restaurant sees their most important information clearly
