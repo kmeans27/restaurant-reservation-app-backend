@@ -1,12 +1,13 @@
 # app/main/routes.py
 
-from flask import render_template, redirect, url_for, request, flash, jsonify, abort
+from flask import render_template, redirect, url_for, request, flash, jsonify, abort, current_app
 from app.main import bp
-from app.models import Restaurant, Reservation, Category
+from app.models import Restaurant, Reservation, Category, FrontendUser
 from app import db
 from datetime import datetime
 from werkzeug.exceptions import BadRequest
 from app.main.forms import RestaurantForm
+from sqlalchemy.exc import SQLAlchemyError
 
 
 
@@ -127,23 +128,35 @@ def manage_reservations(restaurant_id):
 
 # HTML Route to update reservation status
 @bp.route('/api/reservations/<int:reservation_id>/status', methods=['POST'])
-def update_reservation_status_html(reservation_id):
-    reservation = Reservation.query.get_or_404(reservation_id)
-    
-    status = request.form.get('status')
-    if status not in ['accepted', 'declined']:
-        flash('Invalid status update.', 'error')
-        return redirect(url_for('main.manage_reservations', restaurant_id=reservation.restaurant_id))
-    
-    if reservation.status != 'pending':
-        flash('Only pending reservations can be updated.', 'error')
-        return redirect(url_for('main.manage_reservations', restaurant_id=reservation.restaurant_id))
-    
-    reservation.status = status
-    db.session.commit()
-    flash(f'Reservation {status} successfully.', 'success')
-    
-    return redirect(url_for('main.manage_reservations', restaurant_id=reservation.restaurant_id))
+def update_reservation_status(reservation_id):
+    # Determine the request type
+    if request.is_json:
+        data = request.get_json()
+        if not data or 'status' not in data:
+            return jsonify({'error': 'Missing required fields.'}), 400
+        new_status = data.get('status')
+    else:
+        # Assume form data
+        new_status = request.form.get('status')
+        if not new_status:
+            return jsonify({'error': 'Missing required fields.'}), 400
+
+    if new_status not in ['accepted', 'declined']:
+        return jsonify({'error': 'Invalid status value.'}), 400
+
+    try:
+        reservation = Reservation.query.get_or_404(reservation_id)
+
+        # Update status
+        reservation.status = new_status
+
+        db.session.commit()
+        return jsonify({'message': f'Reservation {new_status} successfully.'}), 200
+
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        current_app.logger.error(f"Database error: {str(e)}")
+        return jsonify({'error': 'An error occurred while updating the reservation.'}), 500
 
 
 # API ENDPOINTS
@@ -210,7 +223,6 @@ def get_restaurants_by_category(category_id):
         })
     return jsonify(data)
 
-
 @bp.route('/api/reservations', methods=['POST'])
 def create_reservation():
     data = request.get_json()
@@ -224,9 +236,10 @@ def create_reservation():
     time_str = data.get('time')
     number_of_people = data.get('number_of_people')
     timestamp_str = data.get('timestamp')
+    user_id = data.get('user_id')  # Extract the userId from the frontend
 
     # Validate required fields
-    if not all([restaurant_id, name, date_str, time_str, number_of_people, timestamp_str]):
+    if not all([restaurant_id, name, date_str, time_str, number_of_people, timestamp_str, user_id]):
         return jsonify({'error': 'Missing required fields.'}), 400
 
     # Validate restaurant existence
@@ -246,6 +259,14 @@ def create_reservation():
     except ValueError:
         return jsonify({'error': 'Invalid timestamp format.'}), 400
 
+    # Handle FrontendUser
+    frontend_user = FrontendUser.query.filter_by(user_id=user_id).first()
+    if not frontend_user:
+        # Create a new FrontendUser if it doesn't exist
+        frontend_user = FrontendUser(user_id=user_id)
+        db.session.add(frontend_user)
+        db.session.flush()  # Flush to get the frontend_user.id
+
     # Create a new Reservation object
     new_reservation = Reservation(
         restaurant_id=restaurant_id,
@@ -253,13 +274,15 @@ def create_reservation():
         reservation_datetime=reservation_datetime,
         person_count=number_of_people,
         timestamp=timestamp,
-        status='pending'  # Assuming default status
+        status='pending',  # Assuming default status
+        frontend_user=frontend_user  # Associate the reservation with the FrontendUser
     )
 
     db.session.add(new_reservation)
     db.session.commit()
 
     return jsonify({'message': 'Reservation created successfully.', 'reservation_id': new_reservation.id}), 201
+
 
 # Endpoint to update reservation status (accept or decline)
 @bp.route('/api/reservations/<int:reservation_id>', methods=['PATCH'])
@@ -281,3 +304,26 @@ def update_reservation(reservation_id):
     db.session.commit()
 
     return jsonify({'message': f'Reservation {status} successfully.'}), 200
+
+# retrieve all reservations for a specific user_id (frontend)
+@bp.route('/api/users/<string:user_id>/reservations', methods=['GET'])
+def get_user_reservations(user_id):
+    frontend_user = FrontendUser.query.filter_by(user_id=user_id).first()
+    if not frontend_user:
+        return jsonify({'error': 'User not found.'}), 404
+
+    reservations = frontend_user.reservations
+    reservations_data = []
+    for reservation in reservations:
+        reservations_data.append({
+            'reservation_id': reservation.id,
+            'restaurant_id': reservation.restaurant_id,
+            'restaurant_name': reservation.restaurant.name,
+            'reservation_datetime': reservation.reservation_datetime.isoformat(),
+            'person_count': reservation.person_count,
+            'status': reservation.status,
+            'name': reservation.name
+        })
+
+    return jsonify({'reservations': reservations_data}), 200
+

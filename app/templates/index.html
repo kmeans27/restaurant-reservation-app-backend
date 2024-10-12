@@ -111,17 +111,19 @@
                     <td>Create a new reservation.</td>
                     <td>
                         <pre><code>curl -X POST http://localhost:5000/api/reservations \
-    -H "Content-Type: application/json" \
-    -d '{
-        "restaurant_id": 1,
-        "name": "Max Mustermann",
-        "date": "2024-05-20",
-        "time": "19:30",
-        "number_of_people": 4,
-        "timestamp": "2024-04-27T14:35:22Z"
-    }'</code></pre>
+                    -H "Content-Type: application/json" \
+                    -d '{
+                        "restaurant_id": 1,
+                        "name": "Max Mustermann",
+                        "date": "2024-05-20",
+                        "time": "19:30",
+                        "number_of_people": 4,
+                        "timestamp": "2024-04-27T14:35:22Z",
+                        "userId": "unique_user_id_string"
+                    }'</code></pre>
                     </td>
                 </tr>
+                
                 <tr>
                     <td>PATCH</td>
                     <td><code>/api/reservations/&lt;int:reservation_id&gt;</code></td>
@@ -134,6 +136,17 @@
     }'</code></pre>
                     </td>
                 </tr>
+                <!-- New Endpoint: User Reservations -->
+                <tr>
+                    <td>GET</td>
+                    <td><code>/api/users/&lt;string:user_id&gt;/reservations</code></td>
+                    <td>Retrieve all reservations associated with a specific user.</td>
+                    <td>
+                        <pre><code>curl http://localhost:5000/api/users/unique_user_id_string/reservations</code></pre>
+                        <p class="note">Replace <code>unique_user_id_string</code> with the actual <code>userId</code> provided by the frontend.</p>
+                    </td>
+                </tr>
+                
                 
                 <!-- Additional Endpoints (Optional) -->
                 <!-- Add more endpoints here as you develop them -->

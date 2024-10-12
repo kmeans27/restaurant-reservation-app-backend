@@ -1,8 +1,8 @@
-"""Initial migration with Reservation model
+"""Initial migration after resetting database
 
-Revision ID: ba55ded9782b
+Revision ID: a5a06d5f3c04
 Revises: 
-Create Date: 2024-09-21 17:15:54.134042
+Create Date: 2024-10-12 16:35:35.345451
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'ba55ded9782b'
+revision = 'a5a06d5f3c04'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -23,6 +23,16 @@ def upgrade():
     sa.Column('name', sa.String(length=64), nullable=False),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('name')
+    )
+    op.create_table('frontend_users',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('user_id', sa.String(length=100), nullable=False),
+    sa.Column('email', sa.String(length=120), nullable=True),
+    sa.Column('password', sa.String(length=128), nullable=True),
+    sa.Column('name', sa.String(length=100), nullable=True),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('email'),
+    sa.UniqueConstraint('user_id')
     )
     op.create_table('users',
     sa.Column('id', sa.Integer(), nullable=False),
@@ -51,6 +61,8 @@ def upgrade():
     sa.Column('restaurant_id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(length=100), nullable=False),
     sa.Column('status', sa.String(length=20), nullable=False),
+    sa.Column('frontend_user_id', sa.Integer(), nullable=True),
+    sa.ForeignKeyConstraint(['frontend_user_id'], ['frontend_users.id'], ),
     sa.ForeignKeyConstraint(['restaurant_id'], ['restaurants.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
@@ -70,5 +82,6 @@ def downgrade():
     op.drop_table('reservations')
     op.drop_table('restaurants')
     op.drop_table('users')
+    op.drop_table('frontend_users')
     op.drop_table('categories')
     # ### end Alembic commands ###

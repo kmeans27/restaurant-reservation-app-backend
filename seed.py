@@ -1,7 +1,7 @@
 # seed.py
 
 from app import create_app, db
-from app.models import Restaurant, Category, Reservation
+from app.models import FrontendUser, Reservation, Restaurant, Category
 from datetime import datetime, timedelta
 import random
 
@@ -69,6 +69,34 @@ def seed():
         ]
         db.session.add_all(restaurants)
         db.session.commit()
+
+            # ---------------------------
+        # 3. Create FrontendUsers
+        # ---------------------------
+        frontend_users = [
+            FrontendUser(
+                user_id='user_001',
+                email='john.doe@example.com',      # Nullable for now
+                password=None,                     # Nullable for now
+                name=None                          # Nullable for now
+            ),
+            FrontendUser(
+                user_id='user_002',
+                email='jane.smith@example.com',
+                password=None,
+                name=None
+            ),
+            FrontendUser(
+                user_id='user_003',
+                email='alice.wonder@example.com',
+                password=None,
+                name=None
+            ),
+            # Add more frontend users as needed
+        ]
+
+        db.session.add_all(frontend_users)
+        db.session.commit()
         
         # Create Reservations
         # Generate reservations for the first restaurant
@@ -81,7 +109,8 @@ def seed():
                 person_count=random.randint(1, 6),
                 restaurant_id=1,
                 name=f'Customer {i}',
-                status='pending'
+                status='pending',
+                frontend_user_id= frontend_users[0].id  # Add the frontend user ID here
             )
             db.session.add(reservation)
         
@@ -95,7 +124,8 @@ def seed():
                 person_count=random.randint(1, 6),
                 restaurant_id=2,
                 name=f'Customer {i}',
-                status='pending'
+                status='pending',
+                frontend_user_id= frontend_users[1].id  # Add the frontend user ID here
             )
             db.session.add(reservation)
         
@@ -109,7 +139,9 @@ def seed():
                 person_count=random.randint(1, 6),
                 restaurant_id=3,
                 name=f'Customer {i}',
-                status='pending'
+                status='pending',
+                frontend_user_id= frontend_users[2].id  # Add the frontend user ID here
+
             )
             db.session.add(reservation)
         

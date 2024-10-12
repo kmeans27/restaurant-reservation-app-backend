@@ -48,19 +48,38 @@ restaurant_categories = db.Table('restaurant_categories',
     db.Column('restaurant_id', db.Integer, db.ForeignKey('restaurants.id'), primary_key=True),
     db.Column('category_id', db.Integer, db.ForeignKey('categories.id'), primary_key=True)
 )
-
-class Reservation(db.Model):
-    __tablename__ = 'reservations'  # Ensure plural
+# New FrontendUser Model
+class FrontendUser(db.Model):
+    __tablename__ = 'frontend_users'
     
-    id = db.Column(db.Integer, primary_key=True)  # reservationID
-    reservation_datetime = db.Column(db.DateTime, nullable=False)  # reservationDatetime
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)  # timestamp
-    person_count = db.Column(db.Integer, nullable=False)  # personCount
-    restaurant_id = db.Column(db.Integer, db.ForeignKey('restaurants.id'), nullable=False)  # restaurantId
-    name = db.Column(db.String(100), nullable=False)  # name
-    status = db.Column(db.String(20), nullable=False, default='pending')  # status
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.String(100), unique=True, nullable=False)  # Unique identifier from frontend
+    email = db.Column(db.String(120), unique=True, nullable=True)  # TODO: Set nullable=False after validation
+    password = db.Column(db.String(128), nullable=True)  # TODO: Set nullable=False and handle hashing
+    name = db.Column(db.String(100), nullable=True)  # TODO: Set nullable=False after validation
+    
+    reservations = db.relationship('Reservation', back_populates='frontend_user', cascade='all, delete-orphan')
+    
+    def __repr__(self):
+        return f"<FrontendUser {self.user_id}>"
+
+# added frontend_user_id to Reservation
+class Reservation(db.Model):
+    __tablename__ = 'reservations'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    reservation_datetime = db.Column(db.DateTime, nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    person_count = db.Column(db.Integer, nullable=False)
+    restaurant_id = db.Column(db.Integer, db.ForeignKey('restaurants.id'), nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    status = db.Column(db.String(20), nullable=False, default='pending')
+    frontend_user_id = db.Column(db.Integer, db.ForeignKey('frontend_users.id'), nullable=True)
     
     restaurant = db.relationship('Restaurant', back_populates='reservations')
+    frontend_user = db.relationship('FrontendUser', back_populates='reservations')
     
     def __repr__(self):
         return f"<Reservation {self.id} for {self.name} at {self.reservation_datetime}>"
+
+
