@@ -1,3 +1,5 @@
+<!-- app/templates/create_restaurant.html -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -19,10 +21,11 @@
             display: block;
             margin-top: 10px;
         }
-        input[type="text"], textarea {
+        input[type="text"], input[type="email"], input[type="password"], textarea, select {
             width: 100%;
             padding: 8px;
             margin-top: 5px;
+            box-sizing: border-box;
         }
         .categories {
             margin-top: 10px;
@@ -44,15 +47,6 @@
             margin-top: 15px;
         }
     </style>
-    <script>
-        // Optional: Implement Select/Deselect All functionality
-        function toggleSelectAll(source) {
-            const checkboxes = document.querySelectorAll('input[name="categories"]');
-            checkboxes.forEach(checkbox => {
-                checkbox.checked = source.checked;
-            });
-        }
-    </script>
 </head>
 <body>
     <h1>Create New Restaurant</h1>
@@ -111,25 +105,46 @@
             </ul>
         {% endif %}
         
-        <div class="categories">
-            <label>Categories:</label>
-            {% for value, label in form.categories.choices %}
-                <div>
-                    <label>
-                        <input type="checkbox" name="{{ form.categories.name }}" value="{{ value }}"
-                            {% if value in form.categories.data %}checked{% endif %}>
-                        {{ label }}
-                    </label>
-                </div>
-            {% endfor %}
-            {% if form.categories.errors %}
-                <ul class="errors">
-                    {% for error in form.categories.errors %}
-                        <li>{{ error }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
-        </div>
+        <label for="categories">Categories:</label>
+        {{ form.categories(multiple=True) }}
+        {% if form.categories.errors %}
+            <ul class="errors">
+                {% for error in form.categories.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        
+        <!-- New Fields for User Account -->
+        <label for="email">Email:</label>
+        {{ form.email(size=64) }}
+        {% if form.email.errors %}
+            <ul class="errors">
+                {% for error in form.email.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        
+        <label for="password">Password:</label>
+        {{ form.password(size=32) }}
+        {% if form.password.errors %}
+            <ul class="errors">
+                {% for error in form.password.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        
+        <label for="confirm_password">Confirm Password:</label>
+        {{ form.confirm_password(size=32) }}
+        {% if form.confirm_password.errors %}
+            <ul class="errors">
+                {% for error in form.confirm_password.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
         
         <div class="submit-button">
             {{ form.submit() }}

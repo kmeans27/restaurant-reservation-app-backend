@@ -2,12 +2,31 @@
 
 from flask import render_template, redirect, url_for, request, flash, jsonify, abort, current_app
 from app.main import bp
-from app.models import Restaurant, Reservation, Category, FrontendUser
+from app.models import Restaurant, Reservation, Category, FrontendUser, User
 from app import db
 from datetime import datetime
 from werkzeug.exceptions import BadRequest
 from app.main.forms import RestaurantForm
 from sqlalchemy.exc import SQLAlchemyError
+from geopy.geocoders import Nominatim
+from geopy.exc import GeocoderTimedOut, GeocoderServiceError
+import time
+
+# Initialize the Geocoder
+geolocator = Nominatim(user_agent="restaurant_reservation_app")
+# Define Helper Function for Geocoding
+def geocode_address(address, max_retries=3):
+    for attempt in range(max_retries):
+        try:
+            location = geolocator.geocode(address)
+            if location:
+                return (location.latitude, location.longitude)
+            else:
+                return (None, None)
+        except (GeocoderTimedOut, GeocoderServiceError) as e:
+            app.logger.error(f"Geocoding error for address '{address}': {e}")
+            time.sleep(1)  # Wait before retrying
+    return (None, None)
 
 
 
@@ -34,40 +53,63 @@ def list_reservations():
     return render_template('reservations.html', reservations=reservations)
 
 @bp.route('/restaurants/create', methods=['GET', 'POST'])
+#UPDATED create_restaurant function to handle user creation
 def create_restaurant():
     form = RestaurantForm()
-    # Populate category choices
-    form.categories.choices = [(category.id, category.name) for category in Category.query.all()]
-    
-    if request.method == 'GET':
-        form.categories.data = []  # Initialize to empty list to prevent 'NoneType' errors
     
     if form.validate_on_submit():
+        # Extract form data
         name = form.name.data
         address = form.address.data
         phone_number = form.phone_number.data
         description = form.description.data
-        manager_id = 1  # Assign to a default manager or handle appropriately
-    
-        # Fetch selected Category objects
-        selected_categories = Category.query.filter(Category.id.in_(form.categories.data)).all()
-    
-        # Create a new Restaurant object with selected categories
-        new_restaurant = Restaurant(
+        category_ids = form.categories.data
+        email = form.email.data
+        password = form.password.data
+
+        # Check if email already exists
+        existing_user = User.query.filter_by(email=email).first()
+        if existing_user:
+            flash('Email already registered. Please use a different email.', 'danger')
+            return render_template('create_restaurant.html', form=form)
+
+        # Create User
+        user = User(email=email)
+        user.set_password(password)
+        db.session.add(user)
+        db.session.flush()  # Flush to assign an ID
+
+        # Fetch selected categories
+        selected_categories = Category.query.filter(Category.id.in_(category_ids)).all()
+
+        # Geocode the address
+        lat, lon = geocode_address(address)
+        if lat is None or lon is None:
+            flash('Unable to geocode the address. Please ensure it is correct.', 'danger')
+            db.session.rollback()
+            return render_template('create_restaurant.html', form=form)
+        
+        # Create Restaurant and associate with User
+        restaurant = Restaurant(
             name=name,
             address=address,
             phone_number=phone_number,
             description=description,
-            manager_id=manager_id,
-            categories=selected_categories
+            manager=user,  # Associate with User
+            categories=selected_categories,
+            latitude=lat,
+            longitude=lon
         )
-        db.session.add(new_restaurant)
+
+        db.session.add(restaurant)
         db.session.commit()
-        flash('Restaurant created successfully!', 'success')
+
+        flash('Restaurant and user account created successfully!', 'success')
         return redirect(url_for('main.list_restaurants'))
+    
     else:
         if request.method == 'POST':
-            flash('Please correct the errors in the form.', 'error')
+            flash('Please correct the errors in the form.', 'danger')
     
     return render_template('create_restaurant.html', form=form)
 
@@ -170,7 +212,7 @@ def get_restaurants():
             'id': restaurant.id,
             'name': restaurant.name,
             'address': restaurant.address,
-            'phonenumber': restaurant.phone_number,  # Changed to camelCase
+            'phoneNumber': restaurant.phone_number,  # Changed to camelCase
             'description': restaurant.description,
             'latitude': restaurant.latitude,        # Added latitude
             'longitude': restaurant.longitude, 

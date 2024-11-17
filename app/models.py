@@ -1,57 +1,75 @@
 from datetime import datetime
 from app import db
+from werkzeug.security import generate_password_hash, check_password_hash
+
+# Association table between Restaurant and Category
+restaurant_categories = db.Table(
+    'restaurant_categories',
+    db.Column('restaurant_id', db.Integer, db.ForeignKey('restaurants.id'), primary_key=True),
+    db.Column('category_id', db.Integer, db.ForeignKey('categories.id'), primary_key=True)
+)
 
 class User(db.Model):
-    __tablename__ = 'users'  # Ensure plural
+    # updated this to be used as a manager for restaurants
+    __tablename__ = 'users'
     
     id = db.Column(db.Integer, primary_key=True)
-    # Add other user fields as necessary, e.g., name, email, password_hash, role
-    name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
-    role = db.Column(db.String(20), nullable=False)  # e.g., 'manager', 'customer'
-    
-    restaurants = db.relationship('Restaurant', backref='manager')
-    
+    name = db.Column(db.String(100), nullable=True)  # Optional for now
+
+    # Relationship to Restaurant
+    restaurants = db.relationship('Restaurant', back_populates='manager', cascade='all, delete-orphan')
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
     def __repr__(self):
         return f"<User {self.email}>"
 
 class Restaurant(db.Model):
-    __tablename__ = 'restaurants'  # Ensure plural
-    
+    __tablename__ = 'restaurants'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(128), nullable=False)
-    address = db.Column(db.String(256), nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    address = db.Column(db.String(200), nullable=False)
     phone_number = db.Column(db.String(20), nullable=False)
-    description = db.Column(db.Text(), nullable=True)
+    description = db.Column(db.Text, nullable=False)
     manager_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-
-    # New fields for geographical coordinates
-    latitude = db.Column(db.Float, nullable=True)   # TODO: Consider setting nullable=False after seeding
-    longitude = db.Column(db.Float, nullable=True)  # TODO: Consider setting nullable=False after seeding
+    latitude = db.Column(db.Float, nullable=True) # Nullable for now
+    longitude = db.Column(db.Float, nullable=True) # Nullable for now
     
-    categories = db.relationship('Category', secondary='restaurant_categories', back_populates='restaurants')
+    # Relationships
+    categories = db.relationship(
+        'Category',
+        secondary=restaurant_categories,
+        back_populates='restaurants'
+    )
     reservations = db.relationship('Reservation', back_populates='restaurant', cascade='all, delete-orphan')
+    manager = db.relationship('User', back_populates='restaurants')
     
     def __repr__(self):
         return f"<Restaurant {self.name}>"
 
 class Category(db.Model):
-    __tablename__ = 'categories'  # Ensure plural
-    
+    __tablename__ = 'categories'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(64), nullable=False, unique=True)
+    name = db.Column(db.String(50), nullable=False, unique=True)
     
-    restaurants = db.relationship('Restaurant', secondary='restaurant_categories', back_populates='categories')
+    # Relationship to Restaurant
+    restaurants = db.relationship(
+        'Restaurant',
+        secondary=restaurant_categories,
+        back_populates='categories'
+    )
     
     def __repr__(self):
         return f"<Category {self.name}>"
 
-# Association table between Restaurant and Category
-restaurant_categories = db.Table('restaurant_categories',
-    db.Column('restaurant_id', db.Integer, db.ForeignKey('restaurants.id'), primary_key=True),
-    db.Column('category_id', db.Integer, db.ForeignKey('categories.id'), primary_key=True)
-)
+
+
 # New FrontendUser Model
 class FrontendUser(db.Model):
     __tablename__ = 'frontend_users'

@@ -1,7 +1,7 @@
 # seed.py
 
 from app import create_app, db
-from app.models import FrontendUser, Reservation, Restaurant, Category
+from app.models import FrontendUser, User, Reservation, Restaurant, Category
 from datetime import datetime, timedelta
 from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut, GeocoderServiceError
@@ -31,6 +31,7 @@ def seed():
         # Clear existing data
         db.drop_all()
         db.create_all()
+
         
         # Create Categories
         categories = [
