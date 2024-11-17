@@ -25,6 +25,10 @@ class Restaurant(db.Model):
     phone_number = db.Column(db.String(20), nullable=False)
     description = db.Column(db.Text(), nullable=True)
     manager_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+
+    # New fields for geographical coordinates
+    latitude = db.Column(db.Float, nullable=True)   # TODO: Consider setting nullable=False after seeding
+    longitude = db.Column(db.Float, nullable=True)  # TODO: Consider setting nullable=False after seeding
     
     categories = db.relationship('Category', secondary='restaurant_categories', back_populates='restaurants')
     reservations = db.relationship('Reservation', back_populates='restaurant', cascade='all, delete-orphan')

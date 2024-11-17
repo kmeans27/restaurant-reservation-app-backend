@@ -170,8 +170,10 @@ def get_restaurants():
             'id': restaurant.id,
             'name': restaurant.name,
             'address': restaurant.address,
-            'phoneNumber': restaurant.phone_number,  # Changed to camelCase
+            'phonenumber': restaurant.phone_number,  # Changed to camelCase
             'description': restaurant.description,
+            'latitude': restaurant.latitude,        # Added latitude
+            'longitude': restaurant.longitude, 
             'categories': [category.name for category in restaurant.categories]
         })
     return jsonify(data)
@@ -179,12 +181,15 @@ def get_restaurants():
 @bp.route('/api/restaurants/<int:restaurant_id>', methods=['GET'], endpoint='api_get_restaurant')
 def api_get_restaurant(restaurant_id):
     restaurant = Restaurant.query.get_or_404(restaurant_id)
+    
     data = {
         'id': restaurant.id,
         'name': restaurant.name,
         'address': restaurant.address,
         'phoneNumber': restaurant.phone_number,  # Changed to camelCase
         'description': restaurant.description,
+        'latitude': restaurant.latitude,        # Added latitude
+        'longitude': restaurant.longitude,      # Added longitude
         'categories': [category.name for category in restaurant.categories],
         'reservations': [
             {
@@ -197,7 +202,9 @@ def api_get_restaurant(restaurant_id):
             for reservation in restaurant.reservations
         ]
     }
+    
     return jsonify(data)
+
 
 
 @bp.route('/api/categories', methods=['GET'])
