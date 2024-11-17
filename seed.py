@@ -32,6 +32,26 @@ def seed():
         db.drop_all()
         db.create_all()
 
+        # ---------------------------
+        # 1. Create Users
+        # ---------------------------
+        users = [
+            User(email='manager1@example.com', name='Manager One'),
+            User(email='manager2@example.com', name='Manager Two'),
+            User(email='manager3@example.com', name='Manager Three'),
+            # Add more users if needed
+        ]
+
+        # Set passwords for users
+        for user in users:
+            user.set_password('password123')  # Use a default password for all seed users
+
+        db.session.add_all(users)
+        db.session.commit()
+
+        # Map user IDs to variables for easy reference
+        user1, user2, user3 = users
+
         
         # Create Categories
         categories = [
@@ -67,24 +87,24 @@ def seed():
                 'address': 'Via Madonna del Suffragio, 17, 39011 Lana BZ, Italy',
                 'phone_number': '0123456789',
                 'description': 'Authentic Italian cuisine with a modern twist.',
-                'manager_id': 1,  # Ensure this manager exists
-                'categories': [categories[0], categories[19]] # Italian
+                'manager': user1,  # Assign user instance directly
+                'categories': [categories[0], categories[19]]  # Italian
             },
             {
                 'name': 'Dragon Palace',
                 'address': 'Via Argentieri, 16, 39100 Bolzano BZ, Italy',
                 'phone_number': '0123456789',
                 'description': 'Traditional Chinese dishes served in a cozy environment.',
-                'manager_id': 2,  # Ensure this manager exists
-                'categories': [categories[1], categories[16]]   # Chinese
+                'manager': user2,  # Assign user instance directly
+                'categories': [categories[1], categories[16]]  # Chinese
             },
             {
                 'name': 'El Taco Loco',
                 'address': 'Via del Laghetto, 17, 39042 Bressanone BZ, Italy',
                 'phone_number': '0123456789',
                 'description': 'A vibrant spot for the best tacos and margaritas.',
-                'manager_id': 3,  # Ensure this manager exists
-                'categories': [categories[2], categories[17]] # Mexican
+                'manager': user3,  # Assign user instance directly
+                'categories': [categories[2], categories[17]]  # Mexican
             },
             # Add more restaurants as needed
         ]
@@ -96,7 +116,7 @@ def seed():
                 address=r['address'],
                 phone_number=r['phone_number'],
                 description=r['description'],
-                manager_id=r['manager_id'],
+                manager=r['manager'],  # Use the manager relationship
                 categories=r['categories'],
                 latitude=lat,
                 longitude=lon

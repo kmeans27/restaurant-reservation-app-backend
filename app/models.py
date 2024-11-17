@@ -1,6 +1,7 @@
 from datetime import datetime
-from app import db
+from app import db, login_manager
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import UserMixin
 
 # Association table between Restaurant and Category
 restaurant_categories = db.Table(
@@ -9,26 +10,28 @@ restaurant_categories = db.Table(
     db.Column('category_id', db.Integer, db.ForeignKey('categories.id'), primary_key=True)
 )
 
-class User(db.Model):
-    # updated this to be used as a manager for restaurants
+class User(UserMixin, db.Model):
     __tablename__ = 'users'
-    
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
-    name = db.Column(db.String(100), nullable=True)  # Optional for now
+    name = db.Column(db.String(100), nullable=True)
 
-    # Relationship to Restaurant
-    restaurants = db.relationship('Restaurant', back_populates='manager', cascade='all, delete-orphan')
+    # Relationships
+    restaurant = db.relationship('Restaurant', back_populates='manager', uselist=False)
 
+    # Password methods
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
+    # String representation
     def __repr__(self):
         return f"<User {self.email}>"
+
+
 
 class Restaurant(db.Model):
     __tablename__ = 'restaurants'
@@ -37,7 +40,7 @@ class Restaurant(db.Model):
     address = db.Column(db.String(200), nullable=False)
     phone_number = db.Column(db.String(20), nullable=False)
     description = db.Column(db.Text, nullable=False)
-    manager_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    manager_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, unique=True)
     latitude = db.Column(db.Float, nullable=True) # Nullable for now
     longitude = db.Column(db.Float, nullable=True) # Nullable for now
     
@@ -48,7 +51,7 @@ class Restaurant(db.Model):
         back_populates='restaurants'
     )
     reservations = db.relationship('Reservation', back_populates='restaurant', cascade='all, delete-orphan')
-    manager = db.relationship('User', back_populates='restaurants')
+    manager = db.relationship('User', back_populates='restaurant', uselist=False)
     
     def __repr__(self):
         return f"<Restaurant {self.name}>"

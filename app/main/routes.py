@@ -4,13 +4,14 @@ from flask import render_template, redirect, url_for, request, flash, jsonify, a
 from app.main import bp
 from app.models import Restaurant, Reservation, Category, FrontendUser, User
 from app import db
-from datetime import datetime
+from datetime import datetime, timedelta
 from werkzeug.exceptions import BadRequest
 from app.main.forms import RestaurantForm
 from sqlalchemy.exc import SQLAlchemyError
 from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut, GeocoderServiceError
 import time
+from flask_login import login_required, current_user 
 
 # Initialize the Geocoder
 geolocator = Nominatim(user_agent="restaurant_reservation_app")
@@ -24,7 +25,7 @@ def geocode_address(address, max_retries=3):
             else:
                 return (None, None)
         except (GeocoderTimedOut, GeocoderServiceError) as e:
-            app.logger.error(f"Geocoding error for address '{address}': {e}")
+            current_app.logger.error(f"Geocoding error for address '{address}': {e}")
             time.sleep(1)  # Wait before retrying
     return (None, None)
 
@@ -375,4 +376,85 @@ def get_user_reservations(user_id):
         })
 
     return jsonify({'reservations': reservations_data}), 200
+
+
+
+
+
+
+@bp.route('/dashboard')
+@login_required
+def dashboard():
+    # Get the user's restaurant
+    user_restaurant = current_user.restaurant
+
+    if not user_restaurant:
+        flash('You do not have a restaurant associated with your account.', 'warning')
+        return redirect(url_for('main.create_restaurant'))
+
+    # Get reservations for the user's restaurant
+    reservations = Reservation.query.filter_by(restaurant_id=user_restaurant.id).filter(
+        Reservation.reservation_datetime >= datetime.utcnow()
+    ).order_by(Reservation.reservation_datetime).limit(5).all()
+
+    # Prepare data for the chart
+    # Example: Count reservations by hour
+    from collections import Counter
+    import json
+
+    # Filter reservations based on the selected time frame (e.g., today)
+    time_frame = request.args.get('time_frame', 'today')
+    if time_frame == 'today':
+        start_date = datetime.utcnow().date()
+        end_date = start_date + timedelta(days=1)
+    elif time_frame == 'week':
+        start_date = datetime.utcnow().date()
+        end_date = start_date + timedelta(weeks=1)
+    elif time_frame == 'month':
+        start_date = datetime.utcnow().date()
+        end_date = start_date + timedelta(days=30)
+    else:
+        start_date = datetime.utcnow().date()
+        end_date = start_date + timedelta(days=1)
+
+    # Get reservations in the time frame
+    chart_reservations = Reservation.query.filter_by(restaurant_id=user_restaurant.id).filter(
+        Reservation.reservation_datetime >= start_date,
+        Reservation.reservation_datetime < end_date
+    ).all()
+
+    # Count reservations by hour
+    reservation_hours = [res.reservation_datetime.hour for res in chart_reservations]
+    hour_counts = Counter(reservation_hours)
+    hours = list(range(24))
+    counts = [hour_counts.get(hour, 0) for hour in hours]
+
+    return render_template(
+        'dashboard.html',
+        reservations=reservations,
+        hours=json.dumps(hours),
+        counts=json.dumps(counts),
+        time_frame=time_frame
+    )
+
+
+@bp.route('/my_reservations')
+@login_required
+def my_reservations():
+    # Get the user's restaurants
+    user_restaurants = current_user.restaurants
+
+    if not user_restaurants:
+        flash('No restaurants associated with your account.', 'warning')
+        return redirect(url_for('main.dashboard'))
+
+    # For simplicity, assume the user manages only one restaurant
+    restaurant = user_restaurants[0]
+
+    # Get reservations for the user's restaurant
+    reservations = Reservation.query.filter_by(restaurant_id=restaurant.id).order_by(
+        Reservation.reservation_datetime.desc()
+    ).all()
+
+    return render_template('manage_reservations.html', reservations=reservations, restaurant=restaurant)
 

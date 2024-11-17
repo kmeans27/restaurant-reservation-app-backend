@@ -1,8 +1,8 @@
-"""Add User model and establish relationship with Restaurant
+"""Enforce one-to-one relationship between User and Restaurant
 
-Revision ID: 564f2ed2288f
+Revision ID: 66c561a8391c
 Revises: 
-Create Date: 2024-11-17 15:30:16.541957
+Create Date: 2024-11-17 17:25:26.255623
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '564f2ed2288f'
+revision = '66c561a8391c'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -52,7 +52,8 @@ def upgrade():
     sa.Column('latitude', sa.Float(), nullable=True),
     sa.Column('longitude', sa.Float(), nullable=True),
     sa.ForeignKeyConstraint(['manager_id'], ['users.id'], ),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('manager_id')
     )
     op.create_table('reservations',
     sa.Column('id', sa.Integer(), nullable=False),

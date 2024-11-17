@@ -46,6 +46,9 @@
     </style>
 </head>
 <body>
+    {% extends "base.html" %}
+
+    {% block content %}
     <h1>Welcome to the Restaurant Reservation App</h1>
     <ul>
         <li><a href="{{ url_for('main.list_restaurants') }}">View Restaurants</a></li>
@@ -153,5 +156,6 @@
             </tbody>
         </table>
     </div>
+    {% endblock %}
 </body>
 </html>

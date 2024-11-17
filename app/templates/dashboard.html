@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Dashboard</h1>
+
+<h2>Upcoming Reservations</h2>
+<ul>
+    {% for res in reservations %}
+        <li>{{ res.reservation_datetime.strftime('%Y-%m-%d %H:%M') }} - {{ res.name }} ({{ res.person_count }} people)</li>
+    {% else %}
+        <li>No upcoming reservations.</li>
+    {% endfor %}
+</ul>
+
+<h2>Reservations by Time of Day</h2>
+
+<!-- Time Frame Filter -->
+<form method="get" action="{{ url_for('main.dashboard') }}">
+    <label for="time_frame">Filter:</label>
+    <select name="time_frame" id="time_frame" onchange="this.form.submit()">
+        <option value="today" {% if time_frame == 'today' %}selected{% endif %}>Today</option>
+        <option value="week" {% if time_frame == 'week' %}selected{% endif %}>This Week</option>
+        <option value="month" {% if time_frame == 'month' %}selected{% endif %}>This Month</option>
+    </select>
+</form>
+
+<!-- Chart.js Library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<canvas id="reservationChart" width="800" height="400"></canvas>
+
+<script>
+    var ctx = document.getElementById('reservationChart').getContext('2d');
+    var reservationChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: {{ hours|safe }},
+            datasets: [{
+                label: 'Number of Reservations',
+                data: {{ counts|safe }},
+                backgroundColor: 'rgba(54, 162, 235, 0.6)'
+            }]
+        },
+        options: {
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Hour of Day'
+                    },
+                    ticks: {
+                        stepSize: 1
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Reservations'
+                    },
+                    beginAtZero: true,
+                    stepSize: 1
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}
