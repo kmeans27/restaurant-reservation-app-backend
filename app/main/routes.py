@@ -441,20 +441,17 @@ def dashboard():
 @bp.route('/my_reservations')
 @login_required
 def my_reservations():
-    # Get the user's restaurants
-    user_restaurants = current_user.restaurants
+    # Get the user's restaurant
+    user_restaurant = current_user.restaurant
 
-    if not user_restaurants:
-        flash('No restaurants associated with your account.', 'warning')
-        return redirect(url_for('main.dashboard'))
-
-    # For simplicity, assume the user manages only one restaurant
-    restaurant = user_restaurants[0]
+    if not user_restaurant:
+        flash('You do not have a restaurant associated with your account.', 'warning')
+        return redirect(url_for('main.create_restaurant'))
 
     # Get reservations for the user's restaurant
-    reservations = Reservation.query.filter_by(restaurant_id=restaurant.id).order_by(
+    reservations = Reservation.query.filter_by(restaurant_id=user_restaurant.id).order_by(
         Reservation.reservation_datetime.desc()
     ).all()
 
-    return render_template('manage_reservations.html', reservations=reservations, restaurant=restaurant)
+    return render_template('manage_reservations.html', reservations=reservations, restaurant=user_restaurant)
 
