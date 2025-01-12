@@ -1,8 +1,8 @@
-"""Enforce one-to-one relationship between User and Restaurant
+"""Add special_requests to Reservation
 
-Revision ID: 66c561a8391c
+Revision ID: 569aa7cc9697
 Revises: 
-Create Date: 2024-11-17 17:25:26.255623
+Create Date: 2024-11-23 19:12:33.375679
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '66c561a8391c'
+revision = '569aa7cc9697'
 down_revision = None
 branch_labels = None
 depends_on = None
